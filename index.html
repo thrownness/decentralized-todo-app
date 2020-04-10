@@ -8,6 +8,10 @@
     <ul id="todoList">
     </ul>
 
+    <style>
+        .completed {text-decoration: line-through;}
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
         var gun = Gun();
@@ -35,9 +39,20 @@
             for (let [nodeID, node] of Object.entries(todos)) {
                 console.log('rendering this object');
                 console.log(node);
-                todosHTML += `<li id="${nodeID}" class="${node.status}">${node.timeCreated} ::: ${node.thing}</li>`;
+                todosHTML += `<li id="${nodeID}" class="${node.status}">${node.timeCreated} ::: ${node.thing} <button onclick="changeStatus(this)">Change Status</button></li>`;
             }
             todoList.innerHTML = todosHTML;
+        }
+
+        function changeStatus(element) {
+            var parent = element.parentElement;
+            var nodeID = parent.id;
+            console.log(`changing status of "${nodeID}" in gun graph...`);
+            if (parent.classList.contains('completed')) {
+                gunAppGraph.get(nodeID).put({status: 'active'});
+            } else {
+                gunAppGraph.get(nodeID).put({status: 'completed'});
+            }
         }
 
     </script>
