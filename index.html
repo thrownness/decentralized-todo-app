@@ -5,6 +5,8 @@
 <body>
     <h1>Todo App</h1>
     <input onchange="addTodo(this)" type="text">
+    <ul id="todoList">
+    </ul>
 
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
@@ -22,8 +24,21 @@
         gunAppGraph.map().on(function(node, nodeID){
             console.log(`${nodeID} was updated! Updating local data...`);
             localData[nodeID] = node;
-            console.log(node)
+            renderList(localData);
         });
+
+        function renderList(todos) {
+            console.log('re-rendering UI...');
+            var todoList = document.getElementById("todoList");
+            todoList.innerHTML = '';
+            var todosHTML = '';
+            for (let [nodeID, node] of Object.entries(todos)) {
+                console.log('rendering this object');
+                console.log(node);
+                todosHTML += `<li id="${nodeID}" class="${node.status}">${node.timeCreated} ::: ${node.thing}</li>`;
+            }
+            todoList.innerHTML = todosHTML;
+        }
 
     </script>
 </body>
