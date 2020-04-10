@@ -1,0 +1,30 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>    
+<body>
+    <h1>Todo App</h1>
+    <input onchange="addTodo(this)" type="text">
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script>
+        var gun = Gun();
+        var gunAppGraph = gun.get('todos');
+        var localData = {};
+        
+        function addTodo(element) {
+            console.log(`setting "${element.value}" to gun graph...`);
+            var date = new Date();
+            gunAppGraph.set({thing: element.value, timeCreated: date.toString(),status: 'active'});
+            element.value = '';
+        };
+        
+        gunAppGraph.map().on(function(node, nodeID){
+            console.log(`${nodeID} was updated! Updating local data...`);
+            localData[nodeID] = node;
+            console.log(node)
+        });
+
+    </script>
+</body>
+</html>
