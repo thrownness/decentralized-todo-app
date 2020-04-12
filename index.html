@@ -14,14 +14,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
-        var gun = Gun();
+        var gun = Gun(['https://gun-us.herokuapp.com/gun','https://gun-eu.herokuapp.com/gun']);
         var gunAppGraph = gun.get('todos');
         var localData = {};
         
         function addTodo(element) {
             console.log(`setting "${element.value}" to gun graph...`);
             var date = new Date();
-            gunAppGraph.set({thing: element.value, timeCreated: date.toString(),status: 'active'});
+            gunAppGraph.set({thing: element.value, lastUpdated: date.toString(),status: 'active'});
             element.value = '';
         };
         
@@ -35,30 +35,44 @@
             console.log('re-rendering UI...');
             var todoList = document.getElementById("todoList");
             todoList.innerHTML = '';
-            var todosHTML = '';
             for (let [nodeID, node] of Object.entries(todos)) {
                 if (node !== null) {
                     console.log('rendering this object');
-                    console.log(node);
-                    todosHTML += `<li id="${nodeID}" class="${node.status}">${node.timeCreated} ::: ${node.thing} <button onclick="changeStatus(this)">Change Status</button><button onclick="deleteThing(this)">Delete</button></li>`;
+                    console.log(node.thing);
+                    var text = document.createElement('div');
+                        text.className = node.status
+                        text.innerText = node.thing;
+                    var time = document.createElement('small');
+                        time.innerText = `Last updated: ${node.lastUpdated}`;
+                    var buttons = document.createElement('div');
+                        buttons.innerHTML = `<button onclick="changeStatus(this)">Change Status</button><button onclick="deleteThing(this)">Delete</button>`
+                    var item = document.createElement('li');
+                        item.id = nodeID;
+                        item.appendChild(text);
+                        item.appendChild(time);
+                        item.appendChild(buttons);
+                    todoList.appendChild(item);
                 }
             }
-            todoList.innerHTML = todosHTML;
         }
 
         function changeStatus(element) {
-            var parent = element.parentElement;
+            var parent = element.parentElement.parentElement;
+            var text = parent.firstElementChild;
             var nodeID = parent.id;
             console.log(`changing status of "${nodeID}" in gun graph...`);
-            if (parent.classList.contains('completed')) {
-                gunAppGraph.get(nodeID).put({status: 'active'});
+            if (text.classList.contains('completed')) {
+                var date = new Date();
+                gunAppGraph.get(nodeID).put({status: 'active', lastUpdated: date.toString()});
             } else {
-                gunAppGraph.get(nodeID).put({status: 'completed'});
+                var date = new Date();
+                gunAppGraph.get(nodeID).put({status: 'completed', lastUpdated: date.toString()});
             }
         }
 
         function deleteThing(element) {
-            var parent = element.parentElement;
+            var parent = element.parentElement.parentElement;
+            var text = parent.firstElementChild;
             var nodeID = parent.id;
             console.log(`tombstoning "${nodeID}" in gun graph...`);
             gunAppGraph.get(nodeID).put(null);
