@@ -40,7 +40,7 @@
                     console.log('rendering this object');
                     console.log(node.thing);
                     var text = document.createElement('div');
-                        text.className = node.status
+                        text.className = node.status;
                         text.innerText = node.thing;
                     var time = document.createElement('small');
                         time.innerText = `Last updated: ${node.lastUpdated}`;
@@ -72,7 +72,6 @@
 
         function deleteThing(element) {
             var parent = element.parentElement.parentElement;
-            var text = parent.firstElementChild;
             var nodeID = parent.id;
             console.log(`tombstoning "${nodeID}" in gun graph...`);
             gunAppGraph.get(nodeID).put(null);
