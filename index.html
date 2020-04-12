@@ -61,13 +61,9 @@
             var text = parent.firstElementChild;
             var nodeID = parent.id;
             console.log(`changing status of "${nodeID}" in gun graph...`);
-            if (text.classList.contains('completed')) {
-                var date = new Date();
-                gunAppGraph.get(nodeID).put({status: 'active', lastUpdated: date.toString()});
-            } else {
-                var date = new Date();
-                gunAppGraph.get(nodeID).put({status: 'completed', lastUpdated: date.toString()});
-            }
+            var status = text.classList.contains('completed') ? 'active' : 'completed';
+            var date = new Date();
+            gunAppGraph.get(nodeID).put({status: status, lastUpdated: date.toString()});
         }
 
         function deleteThing(element) {
