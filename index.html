@@ -6,6 +6,7 @@
     <h1>Todo App</h1>
     <div id="splash">
         <button onclick="newApp()">Create New Todo List</button>
+        <input onchange="getApp(this)" placeholder="Existing Todo? Paste key here.">
     </div>
     <div id="app" style="display:none;">
         <input onchange="addTodo(this)" type="text" placeholder="thing todo">
@@ -18,24 +19,43 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
     <script>
         var gun = Gun(['https://gun-us.herokuapp.com/gun','https://gun-eu.herokuapp.com/gun']);
+        var user = gun.user();
         var gunAppGraph;
         var localData = {};
+        var appKeys = {};
 
         function start() {
-            gunAppGraph = gun.get('todos');
-            gunAppGraph.map().on(function(node, nodeID){
-                console.log(`${nodeID} was updated! Updating local data...`);
-                localData[nodeID] = node;
-                renderList(localData);
-            });
-            document.getElementById('app').style.cssText = ""; 
-            document.getElementById('splash').style.display = "none";
+            if (user.is) {
+                console.log('Your app keys are...');
+                console.log(JSON.stringify(appKeys));
+                gunAppGraph = user.get('todos');
+                gunAppGraph.map().on(function(node, nodeID){
+                    console.log(`${nodeID} was updated! Updating local data...`);
+                    localData[nodeID] = node;
+                    renderList(localData);
+                });
+                document.getElementById('app').style.cssText = ""; 
+                document.getElementById('splash').style.display = "none";
+            } else {
+                console.log('You are not logged in...');
+            }
         }
         
-        function newApp() {
+        async function newApp() {
             console.log('creating your new app...');
+            appKeys = await SEA.pair();
+            user.auth(appKeys);
+            start();
+        }
+
+        function getApp(element) {
+            console.log('getting your existing app...');
+            appKeys = JSON.parse(element.value);
+            element.value = '';
+            user.auth(appKeys);
             start();
         }
         
