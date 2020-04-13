@@ -4,10 +4,15 @@
 </head>    
 <body>
     <h1>Todo App</h1>
-    <input onchange="addTodo(this)" type="text">
-    <ul id="todoList">
-    </ul>
-
+    <div id="splash">
+        <button onclick="newApp()">Create New Todo List</button>
+    </div>
+    <div id="app" style="display:none;">
+        <input onchange="addTodo(this)" type="text" placeholder="thing todo">
+        <ul id="todoList">
+        </ul>
+    </div>
+    
     <style>
         .completed {text-decoration: line-through;}
     </style>
@@ -15,22 +20,32 @@
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
         var gun = Gun(['https://gun-us.herokuapp.com/gun','https://gun-eu.herokuapp.com/gun']);
-        var gunAppGraph = gun.get('todos');
+        var gunAppGraph;
         var localData = {};
+
+        function start() {
+            gunAppGraph = gun.get('todos');
+            gunAppGraph.map().on(function(node, nodeID){
+                console.log(`${nodeID} was updated! Updating local data...`);
+                localData[nodeID] = node;
+                renderList(localData);
+            });
+            document.getElementById('app').style.cssText = ""; 
+            document.getElementById('splash').style.display = "none";
+        }
+        
+        function newApp() {
+            console.log('creating your new app...');
+            start();
+        }
         
         function addTodo(element) {
             console.log(`setting "${element.value}" to gun graph...`);
             var date = new Date();
             gunAppGraph.set({thing: element.value, lastUpdated: date.toString(),status: 'active'});
             element.value = '';
-        };
+        }
         
-        gunAppGraph.map().on(function(node, nodeID){
-            console.log(`${nodeID} was updated! Updating local data...`);
-            localData[nodeID] = node;
-            renderList(localData);
-        });
-
         function renderList(todos) {
             console.log('re-rendering UI...');
             var todoList = document.getElementById("todoList");
