@@ -3,10 +3,12 @@
     <meta charset="UTF-8">
 </head>    
 <body>
-    <h1>Todo App</h1>
+    <h1 id="appName">Todo App</h1>
     <div id="splash">
-        <button onclick="newApp()">Create New Todo List</button>
-        <input onchange="getApp(this)" placeholder="Existing Todo? Paste key here.">
+        <h3>Create a new Todo List?</h3>
+        <input onchange="newApp(this)" placeholder="Name the list">
+        <h3>Already have one?</h3>
+        <input onchange="getApp(this)" placeholder="Paste keys here">
     </div>
     <div id="app" style="display:none;">
         <input onchange="addTodo(this)" type="text" placeholder="thing todo">
@@ -27,12 +29,13 @@
         var gunAppGraph;
         var localData = {};
         var appKeys = {};
+        var appName = '';
 
         function start() {
             if (user.is) {
                 console.log('Your app keys are...');
                 console.log(JSON.stringify(appKeys));
-                gunAppGraph = user.get('todos');
+                gunAppGraph = user.get('todos').get('data');
                 gunAppGraph.map().on(async function(encryptedNode, nodeID){
                     console.log(`${nodeID} was updated!`);
                     console.log('I just got some encrypted data:');
@@ -44,6 +47,11 @@
                     localData[nodeID] = decryptedNode;
                     renderList(localData);
                 });
+                user.get('todos').get('name').on(async function(encryptedName) {
+                    var decryptedName = await SEA.decrypt(encryptedName,appKeys);
+                    var title = document.getElementById('appName');
+                    title.innerText = decryptedName;
+                });
                 document.getElementById('app').style.cssText = ""; 
                 document.getElementById('splash').style.display = "none";
             } else {
@@ -51,10 +59,13 @@
             }
         }
         
-        async function newApp() {
+        async function newApp(element) {
             console.log('creating your new app...');
+            var listName = element.value;
             appKeys = await SEA.pair();
             user.auth(appKeys);
+            var encryptedName = await SEA.encrypt(listName, appKeys);
+            user.get('todos').get('name').put(encryptedName);
             start();
         }
 
