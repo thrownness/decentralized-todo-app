@@ -31,11 +31,6 @@
         var appKeys = {};
         var appName = '';
 
-        async function nameList(name) {
-            var encryptedName = await SEA.encrypt(name, appKeys);
-            user.get('todos').get('name').put(encryptedName);
-        }
-
         function start() {
             if (user.is) {
                 console.log('Your app keys are...');
