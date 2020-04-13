@@ -23,6 +23,7 @@
     <script>
         var gun = Gun(['https://gun-us.herokuapp.com/gun','https://gun-eu.herokuapp.com/gun']);
         var user = gun.user();
+        var SEA = Gun.SEA;
         var gunAppGraph;
         var localData = {};
         var appKeys = {};
@@ -32,9 +33,15 @@
                 console.log('Your app keys are...');
                 console.log(JSON.stringify(appKeys));
                 gunAppGraph = user.get('todos');
-                gunAppGraph.map().on(function(node, nodeID){
-                    console.log(`${nodeID} was updated! Updating local data...`);
-                    localData[nodeID] = node;
+                gunAppGraph.map().on(async function(encryptedNode, nodeID){
+                    console.log(`${nodeID} was updated!`);
+                    console.log('I just got some encrypted data:');
+                    console.log(encryptedNode);
+                    var decryptedNode = await SEA.decrypt(encryptedNode, appKeys);
+                    console.log('Here it is decrypted:');
+                    console.log(decryptedNode);
+                    console.log('Updating local data...');
+                    localData[nodeID] = decryptedNode;
                     renderList(localData);
                 });
                 document.getElementById('app').style.cssText = ""; 
@@ -59,10 +66,14 @@
             start();
         }
         
-        function addTodo(element) {
+        async function addTodo(element) {
             console.log(`setting "${element.value}" to gun graph...`);
             var date = new Date();
-            gunAppGraph.set({thing: element.value, lastUpdated: date.toString(),status: 'active'});
+            var data = {thing: element.value, lastUpdated: date.toString(),status: 'active'}
+            var encryptedData = await SEA.encrypt(data, appKeys);
+            console.log('Encrypting it before sending. Looks like this over the wire:');
+            console.log(encryptedData);
+            gunAppGraph.set(encryptedData);
             element.value = '';
         }
         
@@ -91,21 +102,29 @@
             }
         }
 
-        function changeStatus(element) {
+        async function changeStatus(element) {
             var parent = element.parentElement.parentElement;
             var text = parent.firstElementChild;
             var nodeID = parent.id;
             console.log(`changing status of "${nodeID}" in gun graph...`);
             var status = text.classList.contains('completed') ? 'active' : 'completed';
             var date = new Date();
-            gunAppGraph.get(nodeID).put({status: status, lastUpdated: date.toString()});
+            var data = {thing: text.innerText, status: status, lastUpdated: date.toString()};
+            var encryptedData = await SEA.encrypt(data, appKeys);
+            console.log('Encrypting it before sending. Looks like this over the wire:');
+            console.log(encryptedData);
+            gunAppGraph.get(nodeID).put(encryptedData);
         }
 
-        function deleteThing(element) {
+        async function deleteThing(element) {
             var parent = element.parentElement.parentElement;
             var nodeID = parent.id;
             console.log(`tombstoning "${nodeID}" in gun graph...`);
-            gunAppGraph.get(nodeID).put(null);
+            var data = null;
+            var encryptedData = await SEA.encrypt(data, appKeys);
+            console.log('Encrypting it before sending. Looks like this over the wire:');
+            console.log(encryptedData);
+            gunAppGraph.get(nodeID).put(encryptedData);
         }
 
     </script>
