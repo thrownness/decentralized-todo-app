@@ -4,16 +4,22 @@
 </head>    
 <body>
     <h1 id="appName">Todo App</h1>
-    <div id="splash">
+    <div class="view" id="splash" style="display:none;">
         <h3>Create a new Todo List?</h3>
         <input onchange="newApp(this)" placeholder="Name the list">
         <h3>Already have one?</h3>
         <input onchange="getApp(this)" placeholder="Paste keys here">
     </div>
-    <div id="app" style="display:none;">
+    <div class="view" id="app" style="display:none;">
+        <button onclick="focusView('settings')">Show Settings</button>
         <input onchange="addTodo(this)" type="text" placeholder="thing todo">
         <ul id="todoList">
         </ul>
+    </div>
+    <div class="view" id="settings" style="display:none;">
+        <h3>Settings Page</h3>
+        <button onclick="focusView('app')">Back to list</button>
+        <p>Change list name: <input onchange="renameApp(this)" placeholder="Name the list"></p>
     </div>
     
     <style>
@@ -31,6 +37,8 @@
         var appKeys = {};
         var appName = '';
 
+        focusView('splash');
+
         function start() {
             if (user.is) {
                 console.log('Your app keys are...');
@@ -46,11 +54,28 @@
                     var title = document.getElementById('appName');
                     title.innerText = decryptedName;
                 });
-                document.getElementById('app').style.cssText = ""; 
-                document.getElementById('splash').style.display = "none";
+                focusView('app');
             } else {
                 console.log('You are not logged in...');
             }
+        }
+
+        function focusView(viewName) {
+            var views = document.getElementsByClassName('view');
+            for (var i=0; i < views.length; i++) {
+                if (views[i].id === viewName) {
+                    views[i].style.cssText = ""; 
+                } else {
+                    views[i].style.display = "none";
+                }
+            }
+        }
+
+        async function renameApp(element) {
+            var listName = element.value;
+            var encryptedName = await SEA.encrypt(listName, appKeys);
+            user.get('todos').get('name').put(encryptedName);
+            element.value = '';
         }
         
         async function newApp(element) {
@@ -59,6 +84,7 @@
             user.auth(appKeys);
             var encryptedName = await SEA.encrypt(listName, appKeys);
             user.get('todos').get('name').put(encryptedName);
+            element.value = '';
             start();
         }
 
