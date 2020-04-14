@@ -1,9 +1,9 @@
 # Decentralized Todo App
 
-A decentralized todo app made with [gundb](https://github.com/amark/gun);
+A decentralized todo app made with 
 
-See accompanying video tutorials here:
+- [gundb](https://github.com/amark/gun)
+- plain javascript, html, and css
 
-- [1 - GunDB create, read, update, delete](https://youtu.be/68svY76thiQ)
-- [2 - GunDB namespaces, encryption](https://youtu.be/FauETOkRtEk)
+See accompanying video tutorials [here](https://www.youtube.com/watch?v=68svY76thiQ&list=PLK1ySmIf03GOenLB9XS-1bfXW56A1HJ1l)
 
